@@ -9,8 +9,8 @@
         <module name="DocScore" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.8">
-      <module name="DocScore" target="1.5" />
+    <bytecodeTargetLevel target="1.7">
+      <module name="DocScore" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>

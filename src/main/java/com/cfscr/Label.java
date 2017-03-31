@@ -9,6 +9,7 @@ public class Label {
 
 
     public static TreeMap<String, String> getLabelCompLevels() {
+        //TODO get this from JSON
         //TODO determine whether levels are Strings or Ints or choice of options
         TreeMap<String, String> dummyList = new TreeMap<String, String>();
         dummyList.put("faculty", "exact");

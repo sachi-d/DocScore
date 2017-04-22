@@ -3,7 +3,7 @@ package com.cfscr;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
+import info.debatty.java.stringsimilarity.*;
 
 import java.util.*;
 
@@ -16,11 +16,11 @@ public class Document {
     private TreeMap<String, String> documentElements;
 
     public Document(String jsonString) {
-        this.documentElements = parseDocumentJon(jsonString);
+        this.documentElements = parseDocumentJson(jsonString);
         //TODO determine document's unique identifier - "documentName" assumed
     }
 
-    private TreeMap<String, String> parseDocumentJon(String jsonString) {
+    private TreeMap<String, String> parseDocumentJson(String jsonString) {
         TreeMap<String, String> doc = new TreeMap<>();
         iterateJsonObject(jsonString, doc);
         return doc;
@@ -94,9 +94,41 @@ public class Document {
         return documentElements;
     }
 
+    public String getDocumentContentAsString() {
+        StringJoiner sb = new StringJoiner(" ");
+        for (String lab : this.documentElements.keySet()) {
+            sb.add(this.documentElements.get(lab).replaceAll("\"", ""));
+//            System.out.println(this.documentElements.get(lab).replaceAll("\"", ""));
+        }
+        return sb.toString();
+    }
+
+    public static double calculateJaroWinkler(Document[] docs) {
+        int n = docs.length;
+        int pairCount = n * (n - 1) / 2;
+
+        String[] contentStrings = new String[n];
+        for (int i = 0; i < n; i++) {
+            contentStrings[i] = docs[i].getDocumentContentAsString();
+            System.out.println(docs[i].getDocumentContentAsString());
+        }
+
+//        ArrayList<Double> pairScores=new ArrayList<>();
+        JaroWinkler jw = new JaroWinkler();
+        double totScore = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                double pairScore = jw.similarity(contentStrings[i], contentStrings[j]);
+//                pairScores.add(pairScore);
+                totScore += pairScore;
+            }
+        }
+        double avgScore = totScore / pairCount;
+        return avgScore;
+    }
 
     public static void main(String[] args) {
-        String StudentID = "{ documentName\": \"Student ID Card\"," +
+        String studentIDString = "{ documentName\": \"Student ID Card\"," +
                 "  \"university\": \"University of Moratuwa\"," +
                 "  \"faculty\": \"Engineering\"," +
                 "  \"degree\": \"BSc Eng Hons\"," +
@@ -107,13 +139,13 @@ public class Document {
                 "  \"studentIDNo\": \"130094R\"," +
                 "  \"address\": {" +
                 "    \"line1\": \"9A, De Mel Watta Road, Koswatta\"," +
-                "    \"line2\": \"Nawala\"" +
+                "    \"line2\": \"Kurunegala\"" +
                 "  }," +
                 "  \"nic\": \"923231196V\"," +
                 "  \"studentIDValidUntil\": \"Dec 2018\"," +
                 "  \"studentIDCardID\": \"STU-1-41022060-317-130094R\"" +
                 "}";
-        String Passport = "{" +
+        String passportString = "{" +
                 "  \"documentName\": \"Passport\"," +
                 "  \"passportNo\": \"N6663355\"," +
                 "  \"surname\": \"Lokupothagamage Don\"," +
@@ -128,12 +160,12 @@ public class Document {
                 "  \"passportExpiryDate\": \"25/04/2026\"," +
                 "  \"photo\": \"/img/n6663355.jpg\"" +
                 "}";
-        String NIC = "{" +
+        String nicString = "{" +
                 "  \"documentName\": \"NIC\"," +
                 "  \"nic\": \"923231126V\"," +
                 "  \"photo\": \"img/user123/nic.png\"," +
                 "  \"nicIssueDate\": \"2009/12/12\"," +
-                "  \"fullname\": \"Lokupothagamage Don Chanak Lakmal\"," +
+                "  \"fullname\": \"Lokupothagamage Don Chanaka Lakmal\"," +
                 "  \"otherNames\": \"\"," +
                 "  \"sex\": \"male\"," +
                 "  \"birthDate\": \"1992/11/18\"," +
@@ -141,20 +173,25 @@ public class Document {
                 "  \"profession\": \"\"," +
                 "  \"address\": {" +
                 "    \"line1\": \"9A, De Mel Watta Road, Koswatta\"," +
-                "    \"line2\": \"Nawala\"" +
+                "    \"line2\": \"Kurunegala\"" +
                 "  }," +
                 "  \"NICCardId\": \"123A-654B-987D\"" +
                 "}";
 
 
-        Document studentID = new Document(StudentID);
-        Document passport = new Document(Passport);
-        Document nic = new Document(NIC);
+        Document studentID = new Document(studentIDString);
+        Document passport = new Document(passportString);
+        Document nic = new Document(nicString);
 
 
-        ArrayList<Document> userDocuments = new ArrayList<>(Arrays.asList(studentID, nic, passport));
-        double score = studentID.calculateScore(userDocuments);
+        //RAW STRING CALCULATION
+
+        Document[] docStrings = {studentID, passport, nic};
+        double score = Document.calculateJaroWinkler(docStrings);
         System.out.println(score);
+
+        JaroWinkler j = new JaroWinkler();
+        System.out.println(j.similarity("ww", "ww"));
     }
 
 }
